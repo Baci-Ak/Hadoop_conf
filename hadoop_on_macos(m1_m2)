@@ -1,0 +1,414 @@
+# HADOOP INSTALLATION ON MACOS M1/M2:
+
+STEPS:
+install JAVA JDK 8 on your machine: download Java JDK 8 for macOS [here](https://www.oracle.com/uk/java/technologies/downloads/#java8-mac)and follow the steps to install it on your Mac. 
+Open your terminal and type the following command to see if Java has been successfully installed on your Mac:
+
+$ java -version
+
+2. download VISUAL STUDIO CODE from APP store to your mac: you can use any code editor that you are comfortable with.
+
+3. setup JAVA_HOME to your environment directory: go back to your terminal and type :
+
+$ code .zprofile
+
+and the zprofile file will open up.
+go to the terminal and type this command then press enter and type "pwd" to confirm you are in the right path then copy this path :
+
+/Library/Java/JavaVirtualMachines/jdk-1.8.jdk/Contents/Home
+
+and and it to the .zprofile file: 
+
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-1.8.jdk/Contents/Home"
+
+press comand button + S to save the file.
+type echo $JAVA_HOME to confirm that java_home has been added to your environment directory.
+
+4. enable ssh to the localhost: open system preference>>general>>sharing and enable Remote login
+After this, you have to create a security key for SSH. run the following commands to generate the key and authorise it to be used for SSH without password:
+
+$ ssh-keygen -t rsa -P '' -f ~/.ssh/id_rsa
+
+$ cat ~/.ssh/id_rsa.pub >> ~/.ssh/authorized_keys
+
+$ chmod 0600 ~/.ssh/id_rsa.pub
+
+$ ssh localhost. to confirm that SSh key is working fine 
+
+then control button + D to close the connection
+
+5. download hadoop: download the binary latest version of apache hadoop on your mac and untar it and move it to your main root folder [here>>](https://www.apache.org/dyn/closer.cgi/hadoop/common/hadoop-3.3.6/hadoop-3.3.6-aarch64.tar.gz). go back to the terminal and follow the steps below:
+open the the .zprofile file again and add the below commands and change only the hadoop home path to where hadoop is installed on your macos machine and save it:
+
+hadoop configuration:zprofile file:
+export HADOOP_HOME=/Users/USERName/hadoop-3.3.5/
+export HADOOP_INSTALL=$HADOOP_HOME
+export HADOOP_MAPRED_HOME=$HADOOP_HOME
+export HADOOP_COMMON_HOME=$HADOOP_HOME
+export HADOOP_HDFS_HOME=$HADOOP_HOME export YARN_HOME=$HADOOP_HOME
+export HADOOP_COMMON_LIB_NATIVE_DIR=$HADOOP_HOME/lib/native
+export PATH=$PATH:$HADOOP_HOME/sbin:$HADOOP_HOME/bin
+export HADOOP_OPTS="-Djava.library.path=$HADOOP_HOME/lib/nativ"
+
+6. refresh the environment variables by running this command:
+$ source ~/.zprofile
+
+7. configure Hadoop: type this command to move into where hadoop configuration files are
+
+$ cd $HADOOP_HOME/etc/hadoop
+
+then open the hadoop-env.sh file with the following command to open the file on your editor, export the JAVA_HOME as you did in the zprofile file in step3 then save it.
+
+$ code hadoop-env.sh
+
+8. Edit hdfs-site.xml: # code hdfs-site.xml to open the file and past the below commands:
+
+<configuration>
+  <property>
+      <name>dfs.data.dir</name>
+      <value>/Users/COMPUTERNAME/hadoop-3.3.5/hdfs/namenode</value>
+  </property>
+  <property>
+      <name>dfs.data.dir</name>
+      <value>/Users/COMPUTERNAME/hadoop-3.3.5/hdfs/datanode</value>
+  </property>
+  <property>
+      <name>dfs.replication</name>
+      <value>1</value>
+  </property>
+</configuration>
+
+9. Core-site.xml: open with # code Core-site.xml and append with the below commands:
+
+<configuration>
+    <property>
+        <name>hadoop.tmp.dir</name>
+        <value>/Users/COMPUTERNAME/hadoop-3.3.5/hdfs/tmp/</value>
+    </property>
+    <property>
+        <name>fs.default.name</name>
+        <value>hdfs://127.0.0.1:9000</value>
+    </property>
+</configuration>
+
+10. yarn-site.xml: open with # code yarn-site.xml and append with the below commands:
+
+<configuration>
+  <property>
+    <name>yarn.nodemanager.aux-services</name>
+    <value>mapreduce_shuffle</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.aux-services.mapreduce.shuffle.class</name>
+    <value>org.apache.hadoop.mapred.ShuffleHandler</value>
+  </property>
+  <property>
+    <name>yarn.resourcemanager.hostname</name>
+    <value>127.0.0.1</value>
+  </property>
+  <property>
+    <name>yarn.acl.enable</name>
+    <value>0</value>
+  </property>
+  <property>
+    <name>yarn.nodemanager.env-whitelist</name>   
+    <value>JAVA_HOME,HADOOP_COMMON_HOME,HADOOP_HDFS_HOME,HADOOP_CONF_DIR,CLASSPATH_PERPEND_DISTCACHE,HADOOP_YARN_HOME,HADOOP_MAPRED_HOME</value>
+  </property>
+</configuration>
+
+11. Edit mapred-site.xml
+
+<configuration>
+<property>
+<name>mapreduce.framework.name</name>
+<value>yarn</value>
+</property>
+<property>
+<name>mapreduce.application.classpath</name>   
+<value>$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/*:$HADOOP_MAPRED_HOME/share/hadoop/mapreduce/lib/*</value>
+</property>
+</configuration>
+
+12. format HDFS namenode:
+
+$ hadoop namenode -format
+
+13. start all of hadoop
+
+$ start-all.sh
+$ jps
+
+then access hadoop via your local web brower: [localhost>>](http://localhost:9870/)
+
+congratulations hadoop is up and running on your macos m1/m2
+
+
+
+
+
+## APACHE HIVE ON MACOS M1/M2:
+
+Apache Hive is a Data Warehouse built on top of Hadoop to provide data query & analysis.
+
+steps:
+1. download the latest version of apache hive [APACHE HIVE>>](https://dlcdn.apache.org/hive/) on your machine and move it to the main root folder of your system.
+
+2. unzip the file's contents using tar, and rename the directory to "hive" with these commands:
+
+$ tar zxvf apache-hive-3.1.3-bin.tar.gz
+$ mv apache-hive-3.1.3-bin hive_3.1.3
+
+3. run $ pwd and copy the displayed directory where hive is installed and add it to the .zprofile
+
+export HIVE_HOME=/Users/USERNAME/hadoop-3.3.5/Hive/
+export PATH=$PATH:/$HIVE_HOME/bin
+
+4. download the latest version of MYSQL [MYSQL](https://dev.mysql.com/downloads/mysql/). 
+after installing it, start it by going to [system preference>>MYSQL] and then turn it on >>start MYSQL server 
+
+5. go to your terminal, navigate to where MYSQL is installed on your device, copy the path and export it to the .zprofile file:
+
+export PATH=$PATH:/usr/local/mysql-8.0.33-macos13-x86_64/bin
+
+save and refresh the environment variables.
+
+6. Download Connector/J to link MySQL: Before proceeding, check your version of MySQL so you download the correct connector. 
+versions must be the same. Go to [Connector/J>>](https://medium.com/r/?url=https%3A%2F%2Fdev.mysql.com%2Fdownloads%2Fconnector%2Fj%2F).
+select your version of MySQL that you installed. Select the "platform independent" for your operating system. 
+download the compressed TAR version. go to the terminal and navigate to where you downloaded the Connector/J file. 
+unzip the file with the below commands:
+
+$ tar zxvf mysql-connector-j-8.0.33.tar.gz
+
+after unziping, navigate into the folder from the terminal and copy the mysql-connector-j-8.0.33.jar file to /users/USERNAME//hadoop-3.3.5/hive_3.1.3/lib/.
+
+$ cp mysql-connector-j-8.0.33.jar /users/USERNAME//hadoop-3.3.5/hive_3.1.3/lib/
+
+7. By default, there is no password for root user of mysql. you need to login root user & create new hive user to be used by Hive & spark. Login to MySql root user and execute below commands:
+
+$ mysql -u root -p 
+$ CREATE DATABASE metastore; 
+$ use metastore; 
+$ SOURCE /Users/USERNAME/hadoop-3.3.5/hive_3.1.3/scripts/metastore/upgrade/mysql/hive-schema-3.1.0.mysql.sql;
+$ CREATE USER 'hiveuser'@'localhost' IDENTIFIED BY 'hivepassword'; 
+$ GRANT ALL PRIVILEGES on *.* to 'hiveuser'@'localhost';
+$FLUSH PRIVILEGES;
+Exit the mysql shell with exit;
+
+
+7. Setting up configuration files for Hive binary.
+hive-config.sh: open this file at $HIVE_HOME/bin/hive-config.sh file and export HADOOP_HOME:
+
+export HADOOP_HOME=/Users/AKB_CIM/hadoop-3.3.5/
+
+
+8. hive-site.xml (Mysql as Metastore) : create hive-site.xml file under $HOME/hadoop-3.3.5/hive_3.1.3/conf/ directory
+moving to the folder the file: 
+
+$ /Users/AKB_CIM/hadoop-3.3.5/hive_3.1.3/conf
+
+creating the file : 
+
+$ cp hive-default.xml.template hive-site.xml
+
+go to line 3215 in the file and alone that line you will see "&#8;", remove this because it will cause an error as its nothing than just a description of the line of code
+
+edit the file with the below properties:
+
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<?xml-stylesheet type="text/xsl" href="configuration.xsl"?>
+<!--
+   Licensed to the Apache Software Foundation (ASF) under one or more
+   contributor license agreements.  See the NOTICE file distributed with
+   this work for additional information regarding copyright ownership.
+   The ASF licenses this file to You under the Apache License, Version 2.0
+   (the "License"); you may not use this file except in compliance with
+   the License.  You may obtain a copy of the License at
+       http://www.apache.org/licenses/LICENSE-2.0
+   Unless required by applicable law or agreed to in writing, software
+   distributed under the License is distributed on an "AS IS" BASIS,
+   WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+   See the License for the specific language governing permissions and
+   limitations under the License.
+-->
+<configuration>
+    
+<property>
+    <name>hive.querylog.location</name>
+    <value>/Users/USERNAME/hadoop-3.3.5/hive_3.1.3/log/hive.log</value>
+    <description>Location of Hive run time structured log file</description>
+  </property>
+  <property>
+    <name>hive.querylog.enable.plan.progress</name>
+    <value>false</value>
+    <description>
+      Whether to log the plan's progress every time a job's progress is checked.
+      These logs are written to the location specified by hive.querylog.location
+    </description>
+  </property>
+
+  <property>
+    <name>hive.log.explain.output</name>
+    <value>false</value>
+    <description>
+      Whether to log explain output for every query.
+      When enabled, will log EXPLAIN EXTENDED output for the query at INFO log4j log level
+      and in WebUI / Drilldown / Show Query.
+    </description>
+  </property>
+
+<!-- Properties for MySql as Metastore -->
+   <property>
+      <name>javax.jdo.option.ConnectionURL</name>
+      <value>jdbc:mysql://localhost:3306/hiveuser?createDatabaseIfNotExist=true</value>
+      <description>metadata is stored in a MySQL server</description>
+   </property>
+   <property>
+      <name>javax.jdo.option.ConnectionDriverName</name>
+      <value>com.mysql.cj.jdbc.Driver</value>
+      <description>MySQL JDBC driver class</description>
+   </property>
+   <property>
+      <name>javax.jdo.option.ConnectionUserName</name>
+      <value>hiveuser</value>
+      <description>user name for connecting to mysql server</description>
+   </property>
+   <property>
+      <name>javax.jdo.option.ConnectionPassword</name>
+      <value>hivepassword</value>
+      <description>password for connecting to mysql server</description>
+   </property>
+
+<!-- Properties to use Hive by Spark -->
+   <property>
+      <name>hive.metastore.schema.verification</name>
+      <value>false</value>
+      <description>connection from Spark</description>
+   </property>
+
+<property>
+    <name>hive.metastore.warehouse.dir</name>
+    <value>hdfs://localhost:9000/user/hive/warehouse</value>
+    <description>Warehouse Location</description>
+  </property>
+</configuration>
+
+replace ${system:java.io.tmpdir}/${system:user.name} with /tmp/hive in the hive-site.xml file 
+
+
+9. Setup HDFS (creating directory) for storing Hive data & temporary data
+Create warehouse folder under hive and provide permission
+
+$hdfs dfs -mkdir -p /user/hive/warehouse
+$hdfs dfs -chmod g+w /user/hive/warehouse
+
+Create tmp folder in root and provide permission
+$hdfs dfs -mkdir -p /tmp/hive
+$hdfs dfs -chmod g+w /tmp/hive
+$hdfs dfs -chmod 777 /tmp/hive
+
+10. Initialize the metadata store:
+Run the command below to start up MySQL's metadata store:
+ 
+ $ cd Users/USERNAME/hadoop-3.3.5/hive_3.1.3/bin
+ $ schematool -initSchema -dbType mysql
+
+11. if you get this below error when ran the above command: Dont worry!
+why the Error?:
+
+SLF4J: Class path contains multiple SLF4J bindings.
+SLF4J: Found binding in [jar: file:/Users/AKB_CIM/hadoop-3.3.5/hive_3.1.3/lib/log4j-sUf4j-impl-2.17.1.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+SLF4J: Found binding in [jar:file:/Users/AKB_CIM/hadoop-3.3.5/share/hadoop/common/lib/slf4j-reload4j-1.7.36.jar!/org/slf4j/impl/StaticLoggerBinder.class]
+
+It is pretty easy to understand why. With Hadoop, Hive already has pertinent dependent files. After Hadoop and Hive are locally installed, the corresponding class definitions between the two sets of files produce the output shown above.
+
+solution:
+Delete the files that Hadoop (or Hive) repeatedly defines, as showed in the error output above: follow the below steps to delete the file
+$ cd /Users/USERNAME/hadoop-3.3.5/hive_3.1.3/lib
+$ ls
+$ sudo rm ./log4j-slf4j-impl-2.17.1.jar
+
+
+12. repeat step 10: it should be fine
+
+
+13. Start the metastore service by running the below command
+
+$ hive --service metastore &
+OR
+$ hive --service metastore
+
+ Start the Hive Server 2
+
+$ hive --service hiveserver2
+OR
+hiveserver2
+
+Starting Hive: Hive can be started with 'hive' command and hive shell will open:
+
+
+
+
+### APACHE NIFI :
+
+Apache NiFi is designed to automate the flow of data between software systems.
+
+
+INSTALLATION OF APACHE NIFI ON MACOS M1/M2:
+
+1. download the binary version of apache nifi [APACHE NIFI>>](https://nifi.apache.org/download.html), unzip it and move it to the main root folder of your machine.
+
+2. open your terminal and clone the snappy-java github repository to any temporary place on your mac with the below command:
+
+$ git clone https://github.com/xerial/snappy-java.git
+
+
+3. install cmake with the below command:
+
+$ brew install cmake
+
+4. from your terminal, navigate to the snappy-java repository(folder) that you clone in step 2 :
+
+run: $ make
+
+5. enter # ls and you will see a target folder appear, navigate to this folder and you will see a snappy-java-1.1.8.5-SNAPSHOT.jar file 
+this is the file you are interested in. copy this file to /Users/USERNAME/nifi-1.22.0/lib 
+
+$ cp snappy-java-1.1.8.5-SNAPSHOT.jar Users/USERNAME/nifi-1.22.0/lib 
+
+6. navigate to : /Users/USERNAME/nifi-1.22.0/bin and open the nifi-env.sh file  
+export your JAVA_HOME:
+
+export JAVA_HOME="/Library/Java/JavaVirtualMachines/jdk-1.8.jdk/Contents/Home"
+
+7. navigate to : /Users/USERNAME/nifi-1.22.0/conf, open the nifi.properties file 
+remove the nifi.web.https.host default value and change nifi.web.https.port value incase another software is using this port on your device:
+
+
+8. set nifi single user username and password. passward must not be less than 12 characters.
+
+$ ./nifi.sh set-single-user-credentials <user_name> <password>
+
+
+10. start Nifi:
+
+$ ./nifi.sh start
+
+
+11. check the status using command:
+
+$ ./nifi.sh status
+
+
+12. if Any errors occurs, which i doubt, you can check in the nifi-app.log file present in :
+
+/Users/USERNAME/nifi-1.22.0/logs/nifi-app.log
+
+13. once nifi is up and running, you can access it via https://localhost:1111/nifi/login 
+depending on what you use as your port in the nifi.properties file in step 8. change the port number accordingly.
+
+
+14. login with your username and password you created in step 9.
+
+congratulations you now have hadoop, hive and nifi running on your macos machine with apple silicon (m1/m2). 
+if you face any difficulty, you can reach me via [linkedin>>](https://www.linkedin.com/in/basseyakom/). follow this github account and connect via linkedin
